@@ -6,8 +6,20 @@
 use std::fmt::Display;
 
 const BOARD_SIZE: usize = 4;
+const EMPTY_CELL_VALUE: i8 = -1;
+const NUM_PIECES: usize = BOARD_SIZE * BOARD_SIZE;
 
-type BoardCells = [[i32; BOARD_SIZE]; BOARD_SIZE];
+type Piece = i8;
+type BoardCells = [[Piece; BOARD_SIZE]; BOARD_SIZE];
+
+#[derive(Debug)]
+enum BoardError {
+    OutOfBounds,
+    InvalidPiece,
+    PieceAlreadyUsed,
+    CellAlreadyUsed,
+}
+
 struct Board {
     cells: BoardCells,
     cell_width: usize,
@@ -20,12 +32,38 @@ impl Board {
             ..Default::default()
         }
     }
+
+    fn place_piece(&mut self, row: usize, col: usize, piece: Piece) -> Result<(), BoardError> {
+        if row >= BOARD_SIZE || col >= BOARD_SIZE {
+            return Err(BoardError::OutOfBounds);
+        }
+
+        if piece as usize >= NUM_PIECES || piece < 0 {
+            return Err(BoardError::InvalidPiece);
+        }
+
+        if self
+            .cells
+            .into_iter()
+            .any(|row| row.into_iter().any(|cell| cell == piece))
+        {
+            return Err(BoardError::PieceAlreadyUsed);
+        }
+
+        if self.cells[row][col] != EMPTY_CELL_VALUE {
+            return Err(BoardError::CellAlreadyUsed);
+        }
+
+        self.cells[row][col] = piece;
+
+        Ok(())
+    }
 }
 
 impl Default for Board {
     fn default() -> Self {
         Board {
-            cells: [[-1; BOARD_SIZE]; BOARD_SIZE],
+            cells: [[EMPTY_CELL_VALUE; BOARD_SIZE]; BOARD_SIZE],
             cell_width: 4,
         }
     }
@@ -53,9 +91,26 @@ impl Display for Board {
     }
 }
 fn main() {
-    println!("-_-");
-    let board = Board::default();
-    let interesting_board = Board::new([[0, 1, 2, 3], [4, 14, 6, 7], [0, 1, 2, 3], [4, 5, 6, 15]]);
-    println!("{}", board);
-    println!("{}", interesting_board);
+    println!("pieces?");
+    let mut new_board = Board::default();
+    println!("{}", new_board);
+
+    let place_piece_result = new_board.place_piece(0, 0, 5);
+    println!("{:?}", place_piece_result);
+    println!("{}", new_board);
+
+    let place_piece_result = new_board.place_piece(0, 1, 5);
+    println!("place same piece (error)");
+    println!("{:?}", place_piece_result);
+    println!("{}", new_board);
+
+    let place_piece_result = new_board.place_piece(0, 0, 7);
+    println!("place piece in same cell (error)");
+    println!("{:?}", place_piece_result);
+    println!("{}", new_board);
+
+    let place_piece_result = new_board.place_piece(7, 0, 7);
+    println!("place piece out of bounds (error)");
+    println!("{:?}", place_piece_result);
+    println!("{}", new_board);
 }
