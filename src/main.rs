@@ -3,6 +3,8 @@
 // display board
 // manage board data (including win conditions)
 
+use std::fmt::Display;
+
  
 const BOARD_SIZE: usize = 4;
 
@@ -19,18 +21,23 @@ impl Board {
     }
 }
 
-fn print_board(board: &Board) {
-    for row in board.cells {
-        let mut row_str: String = "".to_string();
-        for col in row {
-            row_str += col.to_string().as_str();
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut board_str: String = "".to_string();
+        for row in self.cells {
+            if board_str != "" {
+                board_str += "\n";
+                // TODO: add line separator
+            }
+            let row_str_vec: Vec<String> = row.iter().map(|x| x.to_string()).collect(); 
+            let row_str = row_str_vec.join(" | ");
+            board_str += &row_str;
         }
-        println!("{}", row_str);
+        return write!(f, "{}", board_str);
     }
 }
-
 fn main() {
-    println!("aiya");
+    println!("grrr");
     let board = Board::new();
-    print_board(&board);
+    println!("{}", board);
 }
