@@ -8,7 +8,7 @@ const BOARD_SIZE: usize = 4;
 
 type Board = [[i32; BOARD_SIZE]; BOARD_SIZE];
 
-fn print_board(board: Board) {
+fn print_board(board: &Board) {
     for row in board {
         let mut row_str: String = "".to_string();
         for col in row {
@@ -17,8 +17,10 @@ fn print_board(board: Board) {
         println!("{}", row_str);
     }
 }
+
 fn main() {
-    println!("board board");
+    println!("and board");
     let board: Board = [[-1; BOARD_SIZE]; BOARD_SIZE]; // TODO: should not initialize to -1
-    print_board(board);
+    print_board(&board);
+    print_board(&board);
 }
