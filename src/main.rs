@@ -3,6 +3,8 @@
 // display board
 // manage board data (including win conditions)
 
+use indoc::indoc; // used in tests
+use pretty_assertions::assert_eq; // used in tests
 use std::fmt::Display;
 
 const BOARD_SIZE: usize = 4;
@@ -91,26 +93,65 @@ impl Display for Board {
     }
 }
 fn main() {
-    println!("pieces?");
+    println!("ahahhhhhhh");
     let mut new_board = Board::default();
     println!("{}", new_board);
 
+    let res = new_board.place_piece(0, 0, 5);
+}
+
+#[test]
+fn place_piece_success() {
+    let mut new_board = Board::default();
     let place_piece_result = new_board.place_piece(0, 0, 5);
-    println!("{:?}", place_piece_result);
-    println!("{}", new_board);
+    assert!(place_piece_result.is_ok());
+    let expected_board_str = indoc! {
+        "
+            ───────────────────────────
+            │   5 │   -1 │   -1 │   -1│
+            ───────────────────────────
+            │  -1 │   -1 │   -1 │   -1│
+            ───────────────────────────
+            │  -1 │   -1 │   -1 │   -1│
+            ───────────────────────────
+            │  -1 │   -1 │   -1 │   -1│
+            ───────────────────────────"
+    };
+    assert_eq!(format!("{}", new_board), expected_board_str);
+}
 
-    let place_piece_result = new_board.place_piece(0, 1, 5);
-    println!("place same piece (error)");
-    println!("{:?}", place_piece_result);
-    println!("{}", new_board);
+#[test]
+fn place_same_piece_failure() {
+    let mut new_board = Board::default();
+    let _ = new_board.place_piece(0, 0, 5);
+    let place_same_piece_result = new_board.place_piece(0, 1, 5);
+    assert!(matches!(
+        place_same_piece_result,
+        Err(BoardError::PieceAlreadyUsed)
+    ));
+}
 
-    let place_piece_result = new_board.place_piece(0, 0, 7);
-    println!("place piece in same cell (error)");
-    println!("{:?}", place_piece_result);
-    println!("{}", new_board);
+#[test]
+fn place_piece_in_occupied_territory_failure() {
+    let mut new_board = Board::default();
+    let _ = new_board.place_piece(0, 0, 5);
+    let place_piece_in_same_cell_result = new_board.place_piece(0, 0, 7);
+    assert!(matches!(
+        place_piece_in_same_cell_result,
+        Err(BoardError::CellAlreadyUsed)
+    ));
+}
 
-    let place_piece_result = new_board.place_piece(7, 0, 7);
-    println!("place piece out of bounds (error)");
-    println!("{:?}", place_piece_result);
-    println!("{}", new_board);
+#[test]
+fn place_piece_out_of_bounds_failure() {
+    let mut new_board = Board::default();
+    let place_piece_result = new_board.place_piece(0, 7, 5);
+    assert!(matches!(place_piece_result, Err(BoardError::OutOfBounds)));
+}
+
+#[test]
+fn place_invalid_piece_failure() {
+    let mut new_board = Board::default();
+    let place_piece_result = new_board.place_piece(0, 0, 25);
+    assert!(matches!(place_piece_result, Err(BoardError::InvalidPiece)));
 }
