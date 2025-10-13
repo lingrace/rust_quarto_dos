@@ -85,3 +85,16 @@ impl Display for Board {
         return write!(f, "{}\n{}\n{}", sep, board_str, sep);
     }
 }
+
+// TODO MOVEEEEEEEEEE MEEEEEEE
+pub fn is_winning_line(line: [Piece; BOARD_SIZE]) -> bool {
+    let cumulative_bit_and: i8 = line
+        .iter()
+        .filter(|x| **x != EMPTY_CELL_VALUE)
+        .fold(0b1111, |acc, &x| acc & x);
+    let cumulative_bit_or = line
+        .iter()
+        .filter(|x| **x != EMPTY_CELL_VALUE)
+        .fold(0b0000, |acc, &x| acc | x);
+    return cumulative_bit_and != 0b0000 || cumulative_bit_or != 0b1111;
+}
