@@ -88,13 +88,21 @@ impl Display for Board {
 
 // TODO MOVEEEEEEEEEE MEEEEEEE
 pub fn is_winning_line(line: [Piece; BOARD_SIZE]) -> bool {
-    let cumulative_bit_and: i8 = line
+    let (cumulative_bit_and, cumulative_bit_or, num_non_empty_cells) = line
         .iter()
-        .filter(|x| **x != EMPTY_CELL_VALUE)
-        .fold(0b1111, |acc, &x| acc & x);
-    let cumulative_bit_or = line
-        .iter()
-        .filter(|x| **x != EMPTY_CELL_VALUE)
-        .fold(0b0000, |acc, &x| acc | x);
-    return cumulative_bit_and != 0b0000 || cumulative_bit_or != 0b1111;
+        .filter(|&&x| x != EMPTY_CELL_VALUE)
+        .fold((0b1111, 0b0000, 0), |(acc_and, acc_or, count), &x| {
+            (acc_and & x, acc_or | x, count + 1)
+        });
+
+    #[cfg(debug_assertions)]
+    {
+        println!(
+            "line: {:?}, num_pieces: {}, cumulative_bit_and: {}, cumulative_bit_or: {}",
+            line, num_non_empty_cells, cumulative_bit_and, cumulative_bit_or
+        );
+    }
+
+    return num_non_empty_cells == BOARD_SIZE
+        && (cumulative_bit_and != 0b0000 || cumulative_bit_or != 0b1111);
 }
