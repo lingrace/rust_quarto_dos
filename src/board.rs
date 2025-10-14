@@ -1,10 +1,10 @@
-use std::fmt::Display;
+use std::{collections::HashSet, fmt::Display};
 
 const BOARD_SIZE: usize = 4;
 const EMPTY_CELL_VALUE: i8 = -1;
 const NUM_PIECES: usize = BOARD_SIZE * BOARD_SIZE;
 
-type Piece = i8;
+pub type Piece = i8;
 type BoardCells = [[Piece; BOARD_SIZE]; BOARD_SIZE];
 
 #[derive(Debug)]
@@ -15,9 +15,44 @@ pub enum BoardError {
     CellAlreadyUsed,
 }
 
+// player names
+// current player
+// current game phase
+
+// TODO: move GamePhase and GameState into own module
+
+#[derive(Debug)]
+enum GamePhase {
+    SelectPiece,
+    PlacePiece,
+    GameOver,
+}
+
+#[derive(Debug)]
+pub struct GameState {
+    board: Board,
+    players: [String; 2],
+    current_player_index: usize,
+    game_phase: GamePhase,
+}
+
+impl GameState {
+    pub fn new(player_1_name: String, player_2_name: String) -> Self {
+        GameState {
+            board: Board::default(),
+            players: [player_1_name, player_2_name],
+            current_player_index: 0,
+            game_phase: GamePhase::SelectPiece,
+        }
+    }
+    // TODO: select_piece
+    // TODO: place_piece
+}
+
+#[derive(Debug)]
 pub struct Board {
     cells: BoardCells,
-    cell_width: usize,
+    cell_width: usize, // for Display formatting purposes
 }
 
 impl Board {
@@ -26,6 +61,18 @@ impl Board {
             cells,
             ..Default::default()
         }
+    }
+
+    pub fn available_pieces(&self) -> HashSet<Piece> {
+        let mut all_available_pieces: HashSet<Piece> = (0..NUM_PIECES as i8).collect();
+        for i in 0..BOARD_SIZE {
+            for j in 0..BOARD_SIZE {
+                if self.cells[i][j] != EMPTY_CELL_VALUE {
+                    all_available_pieces.remove(&self.cells[i][j]);
+                }
+            }
+        }
+        all_available_pieces
     }
 
     pub fn place_piece(&mut self, row: usize, col: usize, piece: Piece) -> Result<(), BoardError> {

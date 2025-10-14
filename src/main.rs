@@ -6,7 +6,7 @@
 use rust_quarto_dos::board::Board;
 
 fn main() {
-    println!("can actually win now");
+    println!("derp");
     let mut new_board = Board::default();
     println!("{}", new_board);
 
