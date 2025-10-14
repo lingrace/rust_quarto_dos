@@ -53,6 +53,10 @@ impl Board {
 
         Ok(())
     }
+
+    pub fn is_won(&self) -> bool {
+        false
+    }
 }
 
 impl Default for Board {
@@ -80,20 +84,18 @@ impl Display for Board {
             })
             .collect::<Vec<_>>()
             .join(&format!("\n{}\n", sep));
-        // TODO add line separator
 
         return write!(f, "{}\n{}\n{}", sep, board_str, sep);
     }
 }
 
 // TODO MOVEEEEEEEEEE MEEEEEEE
-pub fn is_winning_line(line: [Piece; BOARD_SIZE]) -> bool {
-    let (cumulative_bit_and, cumulative_bit_or, num_non_empty_cells) = line
-        .iter()
-        .filter(|&&x| x != EMPTY_CELL_VALUE)
-        .fold((0b1111, 0b0000, 0), |(acc_and, acc_or, count), &x| {
-            (acc_and & x, acc_or | x, count + 1)
-        });
+pub fn is_winning_line(line: &[Piece; BOARD_SIZE]) -> bool {
+    let filtered_line: Vec<&Piece> = line.iter().filter(|&&x| x != EMPTY_CELL_VALUE).collect();
+
+    let num_non_empty_cells = filtered_line.len();
+    let cumulative_bit_and = filtered_line.iter().fold(0b1111, |acc, x| acc & *x);
+    let cumulative_bit_or = filtered_line.iter().fold(0b0000, |acc, x| acc | *x);
 
     #[cfg(debug_assertions)]
     {
