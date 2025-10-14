@@ -55,6 +55,41 @@ impl Board {
     }
 
     pub fn is_won(&self) -> bool {
+        // Check rows
+        for row in self.cells {
+            if is_winning_line(&row) {
+                return true;
+            }
+        }
+
+        // Check columns
+        for j in 0..BOARD_SIZE {
+            let mut col = [EMPTY_CELL_VALUE; BOARD_SIZE];
+            for i in 0..BOARD_SIZE {
+                col[i] = self.cells[i][j];
+            }
+            if is_winning_line(&col) {
+                return true;
+            }
+        }
+
+        // Check diagonals
+        let mut diag = [EMPTY_CELL_VALUE; BOARD_SIZE];
+        for i in 0..BOARD_SIZE {
+            diag[i] = self.cells[i][i];
+        }
+        if is_winning_line(&diag) {
+            return true;
+        }
+
+        let mut cross_diag = [EMPTY_CELL_VALUE; BOARD_SIZE];
+        for i in 0..BOARD_SIZE {
+            cross_diag[i] = self.cells[i][BOARD_SIZE - 1 - i];
+        }
+        if is_winning_line(&cross_diag) {
+            return true;
+        }
+
         false
     }
 }
