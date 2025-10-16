@@ -1,5 +1,5 @@
 use pretty_assertions::{assert_eq, assert_matches};
-use rust_quarto_dos::board::{BoardError, GameState, GameStateError};
+use rust_quarto_dos::board::{BoardError, GamePhase, GameState, GameStateError, Player};
 
 // TODO turn into a proper test later
 #[test]
@@ -13,9 +13,9 @@ fn game_state_current_player() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new(player_1_name, player_2_name);
-    assert_eq!(game_state.current_player(), player_1_name);
+    assert_eq!(game_state.get_current_player(), player_1_name);
     assert!(game_state.select_piece(1).is_ok());
-    assert_eq!(game_state.current_player(), player_2_name);
+    assert_eq!(game_state.get_current_player(), player_2_name);
 }
 
 #[test]
@@ -25,6 +25,7 @@ fn game_state_select_piece_success() {
     let mut game_state = GameState::new(player_1_name, player_2_name);
     let select_res = game_state.select_piece(1);
     assert!(select_res.is_ok());
+    assert_matches!(game_state.game_phase, GamePhase::PlacePiece(1));
 }
 
 #[test]
@@ -65,5 +66,62 @@ fn game_state_select_piece_failure_piece_already_used() {
         Err(GameStateError::SelectPieceError(
             BoardError::PieceAlreadyUsed
         ))
+    );
+}
+
+#[test]
+fn game_state_place_piece_success() {
+    let player_1_name = "player 1";
+    let player_2_name = "god";
+    let piece: i8 = 1;
+    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let _ = game_state.select_piece(piece);
+    let place_piece_res = game_state.place_piece(2, 0);
+    assert!(place_piece_res.is_ok());
+    assert_matches!(game_state.game_phase, GamePhase::SelectPiece);
+}
+
+#[test]
+fn game_state_place_piece_failure_incorrect_game_phase() {
+    let player_1_name = "player 1";
+    let player_2_name = "god";
+    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let place_res = game_state.place_piece(1, 1);
+    assert_matches!(place_res, Err(GameStateError::GamePhaseIncorrect));
+}
+
+#[test]
+fn game_state_place_piece_failure_out_of_bounds() {
+    let player_1_name = "player 1";
+    let player_2_name = "god";
+    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let _ = game_state.select_piece(1);
+    let place_res = game_state.place_piece(5, 2);
+    assert_matches!(
+        place_res,
+        Err(GameStateError::PlacePieceError(BoardError::OutOfBounds))
+    );
+}
+
+#[test]
+fn game_state_place_piece_success_is_won() {
+    let player_1_name = "player 1";
+    let player_2_name = "god";
+    let mut game_state = GameState::new(player_1_name, player_2_name);
+
+    // Set up win
+    let _ = game_state.select_piece(0);
+    let _ = game_state.place_piece(0, 0);
+    let _ = game_state.select_piece(1);
+    let _ = game_state.place_piece(0, 1);
+    let _ = game_state.select_piece(2);
+    let _ = game_state.place_piece(0, 2);
+    let _ = game_state.select_piece(3);
+    let win_place_piece_res = game_state.place_piece(0, 3);
+
+    assert!(win_place_piece_res.is_ok());
+    assert_matches!(
+        game_state.game_phase,
+        GamePhase::GameOver(Some(Player::Player1))
     );
 }

@@ -22,14 +22,14 @@ pub enum BoardError {
 // TODO: move GamePhase and GameState into own module
 
 #[derive(Debug)]
-enum GamePhase {
+pub enum GamePhase {
     SelectPiece,
     PlacePiece(Piece),
     GameOver(Option<Player>),
 }
 
 #[derive(Debug, Clone)]
-enum Player {
+pub enum Player {
     Player1,
     Player2,
 }
@@ -47,7 +47,7 @@ pub struct GameState {
     player_1: String,
     player_2: String,
     current_player: Player,
-    game_phase: GamePhase,
+    pub game_phase: GamePhase,
 }
 
 impl GameState {
@@ -68,7 +68,7 @@ impl GameState {
         }
     }
 
-    pub fn current_player(&self) -> &str {
+    pub fn get_current_player(&self) -> &str {
         match self.current_player {
             Player::Player1 => self.player_1.as_str(),
             Player::Player2 => self.player_2.as_str(),

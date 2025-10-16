@@ -6,7 +6,7 @@
 use rust_quarto_dos::board::Board;
 
 fn main() {
-    println!("herp derp");
+    println!("herp derp derp");
     let mut new_board = Board::default();
     println!("{}", new_board);
 
