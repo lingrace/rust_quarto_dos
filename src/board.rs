@@ -24,29 +24,103 @@ pub enum BoardError {
 #[derive(Debug)]
 enum GamePhase {
     SelectPiece,
-    PlacePiece,
-    GameOver,
+    PlacePiece(Piece),
+    GameOver(Option<Player>),
+}
+
+#[derive(Debug, Clone)]
+enum Player {
+    Player1,
+    Player2,
+}
+
+#[derive(Debug)]
+pub enum GameStateError {
+    SelectPieceError(BoardError),
+    PlacePieceError(BoardError),
+    GamePhaseIncorrect,
 }
 
 #[derive(Debug)]
 pub struct GameState {
     board: Board,
-    players: [String; 2],
-    current_player_index: usize,
+    player_1: String,
+    player_2: String,
+    current_player: Player,
     game_phase: GamePhase,
 }
 
 impl GameState {
-    pub fn new(player_1_name: String, player_2_name: String) -> Self {
+    pub fn new(player_1_name: &str, player_2_name: &str) -> Self {
         GameState {
             board: Board::default(),
-            players: [player_1_name, player_2_name],
-            current_player_index: 0,
+            player_1: player_1_name.to_string(),
+            player_2: player_2_name.to_string(),
+            current_player: Player::Player1,
             game_phase: GamePhase::SelectPiece,
         }
     }
-    // TODO: select_piece
-    // TODO: place_piece
+
+    fn switch_player(&mut self) {
+        self.current_player = match self.current_player {
+            Player::Player1 => Player::Player2,
+            Player::Player2 => Player::Player1,
+        }
+    }
+
+    pub fn current_player(&self) -> &str {
+        match self.current_player {
+            Player::Player1 => self.player_1.as_str(),
+            Player::Player2 => self.player_2.as_str(),
+        }
+    }
+
+    pub fn select_piece(&mut self, piece: Piece) -> Result<(), GameStateError> {
+        if !matches!(self.game_phase, GamePhase::SelectPiece) {
+            return Err(GameStateError::GamePhaseIncorrect);
+        }
+
+        if piece as usize >= NUM_PIECES {
+            return Err(GameStateError::SelectPieceError(BoardError::InvalidPiece));
+        }
+
+        if !self.board.available_pieces().contains(&piece) {
+            return Err(GameStateError::SelectPieceError(
+                BoardError::PieceAlreadyUsed,
+            ));
+        }
+
+        self.switch_player();
+        self.game_phase = GamePhase::PlacePiece(piece);
+
+        Ok(())
+    }
+
+    pub fn place_piece(&mut self, row: usize, col: usize) -> Result<(), GameStateError> {
+        let piece = match self.game_phase {
+            GamePhase::PlacePiece(piece) => Some(piece),
+            _ => None,
+        };
+        if piece.is_none() {
+            return Err(GameStateError::GamePhaseIncorrect);
+        }
+
+        let piece = piece.unwrap();
+
+        match self.board.place_piece(row, col, piece) {
+            Err(err) => return Err(GameStateError::PlacePieceError(err)),
+            _ => {}
+        }
+
+        self.game_phase = if self.board.is_won() {
+            GamePhase::GameOver(Some(self.current_player.clone()))
+        } else if self.board.available_pieces().is_empty() {
+            GamePhase::GameOver(None)
+        } else {
+            GamePhase::SelectPiece
+        };
+        Ok(())
+    }
 }
 
 #[derive(Debug)]
