@@ -15,10 +15,6 @@ pub enum BoardError {
     CellAlreadyUsed,
 }
 
-// player names
-// current player
-// current game phase
-
 // TODO: move GamePhase and GameState into own module
 
 #[derive(Debug)]
@@ -137,6 +133,25 @@ impl Board {
         }
     }
 
+    pub fn is_winning_line(line: &[Piece; BOARD_SIZE]) -> bool {
+        let filtered_line: Vec<&Piece> = line.iter().filter(|&&x| x != EMPTY_CELL_VALUE).collect();
+
+        let num_non_empty_cells = filtered_line.len();
+        let cumulative_bit_and = filtered_line.iter().fold(0b1111, |acc, x| acc & *x);
+        let cumulative_bit_or = filtered_line.iter().fold(0b0000, |acc, x| acc | *x);
+
+        #[cfg(debug_assertions)]
+        {
+            println!(
+                "line: {:?}, num_pieces: {}, cumulative_bit_and: {}, cumulative_bit_or: {}",
+                line, num_non_empty_cells, cumulative_bit_and, cumulative_bit_or
+            );
+        }
+
+        return num_non_empty_cells == BOARD_SIZE
+            && (cumulative_bit_and != 0b0000 || cumulative_bit_or != 0b1111);
+    }
+
     pub fn available_pieces(&self) -> HashSet<Piece> {
         let mut all_available_pieces: HashSet<Piece> = (0..NUM_PIECES as i8).collect();
         for i in 0..BOARD_SIZE {
@@ -178,7 +193,7 @@ impl Board {
     pub fn is_won(&self) -> bool {
         // Check rows
         for row in self.cells {
-            if is_winning_line(&row) {
+            if Board::is_winning_line(&row) {
                 return true;
             }
         }
@@ -189,7 +204,7 @@ impl Board {
             for i in 0..BOARD_SIZE {
                 col[i] = self.cells[i][j];
             }
-            if is_winning_line(&col) {
+            if Board::is_winning_line(&col) {
                 return true;
             }
         }
@@ -199,7 +214,7 @@ impl Board {
         for i in 0..BOARD_SIZE {
             diag[i] = self.cells[i][i];
         }
-        if is_winning_line(&diag) {
+        if Board::is_winning_line(&diag) {
             return true;
         }
 
@@ -207,7 +222,7 @@ impl Board {
         for i in 0..BOARD_SIZE {
             cross_diag[i] = self.cells[i][BOARD_SIZE - 1 - i];
         }
-        if is_winning_line(&cross_diag) {
+        if Board::is_winning_line(&cross_diag) {
             return true;
         }
 
@@ -243,24 +258,4 @@ impl Display for Board {
 
         return write!(f, "{}\n{}\n{}", sep, board_str, sep);
     }
-}
-
-// TODO MOVEEEEEEEEEE MEEEEEEE
-pub fn is_winning_line(line: &[Piece; BOARD_SIZE]) -> bool {
-    let filtered_line: Vec<&Piece> = line.iter().filter(|&&x| x != EMPTY_CELL_VALUE).collect();
-
-    let num_non_empty_cells = filtered_line.len();
-    let cumulative_bit_and = filtered_line.iter().fold(0b1111, |acc, x| acc & *x);
-    let cumulative_bit_or = filtered_line.iter().fold(0b0000, |acc, x| acc | *x);
-
-    #[cfg(debug_assertions)]
-    {
-        println!(
-            "line: {:?}, num_pieces: {}, cumulative_bit_and: {}, cumulative_bit_or: {}",
-            line, num_non_empty_cells, cumulative_bit_and, cumulative_bit_or
-        );
-    }
-
-    return num_non_empty_cells == BOARD_SIZE
-        && (cumulative_bit_and != 0b0000 || cumulative_bit_or != 0b1111);
 }

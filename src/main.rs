@@ -1,12 +1,9 @@
-// take input from user
-// handle help commands
-// display board
-// manage board data (including win conditions)
-
+// TODO: input handler game loop
+// TODO: handle help commands
 use rust_quarto_dos::board::Board;
 
 fn main() {
-    println!("herp derp derp");
+    println!("halp");
     let mut new_board = Board::default();
     println!("{}", new_board);
 
