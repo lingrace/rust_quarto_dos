@@ -3,7 +3,7 @@
 use rust_quarto_dos::board::Board;
 
 fn main() {
-    println!("halp");
+    println!("organizing code is hard");
     let mut new_board = Board::default();
     println!("{}", new_board);
 
