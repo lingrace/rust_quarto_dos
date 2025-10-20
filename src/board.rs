@@ -47,6 +47,7 @@ pub struct GameState {
 }
 
 impl GameState {
+    // TODO: write a function that lets you create a GameState initialized with arbitraty state
     pub fn new(player_1_name: &str, player_2_name: &str) -> Self {
         GameState {
             board: Board::default(),
@@ -62,6 +63,14 @@ impl GameState {
             Player::Player1 => Player::Player2,
             Player::Player2 => Player::Player1,
         }
+    }
+
+    pub fn available_pieces(&self) -> Vec<Piece> {
+        self.board.available_pieces()
+    }
+
+    pub fn display_board(&self) {
+        println!("{}", self.board);
     }
 
     pub fn get_current_player(&self) -> &str {
@@ -117,6 +126,38 @@ impl GameState {
         };
         Ok(())
     }
+    // TODO: move to GameEngine
+    pub fn handle_select_piece(&mut self, input: &str) {
+        if let Ok(piece) = input.parse::<Piece>() {
+            println!("Selecting piece {}", piece);
+            let res = self.select_piece(piece);
+            if let Err(e) = res {
+                println!("Got an error: {:?}", e);
+                println!("These pieces are available: {:?}", self.available_pieces());
+                println!("Try selecting a piece again.");
+            }
+        }
+    }
+
+    pub fn handle_place_piece(&mut self, piece: Piece, input: &str) {
+        let parts: Vec<&str> = input.split(',').map(|x| x.trim()).collect();
+        if parts.len() != 2 {
+            println!(
+                "Input incorrect, received {} arguments when expected 2",
+                parts.len()
+            );
+            println!("Try placing the piece again.");
+            return;
+        }
+        if let (Ok(row), Ok(col)) = (parts[0].parse::<usize>(), parts[1].parse::<usize>()) {
+            println!("Placing piece {} at row {} and col {}", piece, row, col);
+            let res = self.place_piece(row, col);
+            if let Err(e) = res {
+                println!("Got an error: {:?}", e);
+                println!("Try placing the piece again.");
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -140,19 +181,20 @@ impl Board {
         let cumulative_bit_and = filtered_line.iter().fold(0b1111, |acc, x| acc & *x);
         let cumulative_bit_or = filtered_line.iter().fold(0b0000, |acc, x| acc | *x);
 
-        #[cfg(debug_assertions)]
-        {
-            println!(
-                "line: {:?}, num_pieces: {}, cumulative_bit_and: {}, cumulative_bit_or: {}",
-                line, num_non_empty_cells, cumulative_bit_and, cumulative_bit_or
-            );
-        }
+        // TODO: remove or turn into a --debug log
+        // #[cfg(debug_assertions)]
+        // {
+        //     println!(
+        //         "line: {:?}, num_pieces: {}, cumulative_bit_and: {}, cumulative_bit_or: {}",
+        //         line, num_non_empty_cells, cumulative_bit_and, cumulative_bit_or
+        //     );
+        // }
 
         return num_non_empty_cells == BOARD_SIZE
             && (cumulative_bit_and != 0b0000 || cumulative_bit_or != 0b1111);
     }
 
-    pub fn available_pieces(&self) -> HashSet<Piece> {
+    pub fn available_pieces(&self) -> Vec<Piece> {
         let mut all_available_pieces: HashSet<Piece> = (0..NUM_PIECES as i8).collect();
         for i in 0..BOARD_SIZE {
             for j in 0..BOARD_SIZE {
@@ -161,6 +203,8 @@ impl Board {
                 }
             }
         }
+        let mut all_available_pieces: Vec<Piece> = all_available_pieces.into_iter().collect();
+        all_available_pieces.sort();
         all_available_pieces
     }
 
@@ -241,17 +285,23 @@ impl Default for Board {
 
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let sep = "─".repeat(self.cell_width * BOARD_SIZE + 3 * (BOARD_SIZE - 1) + 2);
+        let sep = "─".repeat(self.cell_width * BOARD_SIZE + 3 * (BOARD_SIZE - 1) + 4);
         let board_str = self
             .cells
             .iter()
             .map(|row| {
                 let row_str = row
                     .iter()
-                    .map(|x| format!("{:width$}", x, width = self.cell_width))
+                    .map(|x| {
+                        if *x != EMPTY_CELL_VALUE {
+                            format!("{:width$}", x, width = self.cell_width)
+                        } else {
+                            format!("{:width$}", "", width = self.cell_width)
+                        }
+                    })
                     .collect::<Vec<_>>()
                     .join(" │ ");
-                format!("│{}│", row_str)
+                format!("│ {} │", row_str)
             })
             .collect::<Vec<_>>()
             .join(&format!("\n{}\n", sep));

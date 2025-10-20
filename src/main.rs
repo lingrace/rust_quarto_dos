@@ -1,11 +1,36 @@
-// TODO: input handler game loop
-// TODO: handle help commands
-use rust_quarto_dos::board::Board;
+use std::io;
+
+use rust_quarto_dos::board::{GamePhase, GameState};
 
 fn main() {
-    println!("organizing code is hard");
-    let mut new_board = Board::default();
-    println!("{}", new_board);
+    println!("loopy poop");
+    let mut game_state = GameState::new("p1", "god");
 
-    let _ = new_board.place_piece(0, 0, 5);
+    loop {
+        let mut input = String::new();
+        println!("Enter something (or 'quit' to exit):");
+
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+
+        let input = input.trim(); // remove newline and spaces
+
+        match input {
+            // TODO: handle help commands
+            "display board" => {
+                game_state.display_board();
+            }
+            _ => match game_state.game_phase {
+                // TODO: improve input prompting
+                GamePhase::SelectPiece => game_state.handle_select_piece(input),
+                GamePhase::PlacePiece(piece) => {
+                    game_state.handle_place_piece(piece, input);
+                }
+                GamePhase::GameOver(_) => {
+                    println!("game is over!");
+                }
+            },
+        }
+    }
 }
