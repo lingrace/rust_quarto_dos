@@ -9,7 +9,6 @@ fn place_piece_success() {
     assert!(place_piece_result.is_ok());
     let expected_board_str = indoc! {
         "
-            ─
             ────────────────────────────
             │    5 │      │      │      │
             ─────────────────────────────
