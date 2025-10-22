@@ -1,5 +1,6 @@
 use pretty_assertions::{assert_eq, assert_matches};
-use rust_quarto_dos::board::{BoardError, GamePhase, GameState, GameStateError, Piece, Player};
+use rust_quarto_dos::board::{BoardError, Piece};
+use rust_quarto_dos::game_state::{GamePhase, GameState, GameStateError, Player};
 
 // TODO: set up shared test setup
 // TODO turn into a proper test later

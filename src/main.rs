@@ -1,9 +1,9 @@
 use std::io;
 
-use rust_quarto_dos::board::{GamePhase, GameState};
+use rust_quarto_dos::game_state::{GamePhase, GameState};
 
 fn main() {
-    println!("constants on the move");
+    println!("game state on the move");
     let mut game_state = GameState::new("p1", "god");
 
     loop {
