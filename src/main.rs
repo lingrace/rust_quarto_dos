@@ -1,10 +1,10 @@
 use std::io;
 
-use rust_quarto_dos::game_state::{GamePhase, GameState};
+use rust_quarto_dos::game_state::{GameEngine, GamePhase};
 
 fn main() {
-    println!("game state on the move");
-    let mut game_state = GameState::new("p1", "god");
+    println!("choo choo");
+    let mut game_engine = GameEngine::new("p1", "god");
 
     loop {
         let mut input = String::new();
@@ -19,13 +19,13 @@ fn main() {
         match input {
             // TODO: handle help commands
             "display board" => {
-                game_state.display_board();
+                game_engine.game_state.display_board();
             }
-            _ => match game_state.game_phase {
+            _ => match game_engine.game_state.game_phase {
                 // TODO: improve input prompting
-                GamePhase::SelectPiece => game_state.handle_select_piece(input),
+                GamePhase::SelectPiece => game_engine.handle_select_piece(input),
                 GamePhase::PlacePiece(piece) => {
-                    game_state.handle_place_piece(piece, input);
+                    game_engine.handle_place_piece(piece, input);
                 }
                 GamePhase::GameOver(_) => {
                     println!("game is over!");

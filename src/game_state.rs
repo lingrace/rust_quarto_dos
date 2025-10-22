@@ -112,14 +112,30 @@ impl GameState {
         };
         Ok(())
     }
-    // TODO: move to GameEngine
+}
+
+// TODO: break GameEngine into a new file
+pub struct GameEngine {
+    pub game_state: GameState, // TODO: consider if and how to make game_state private
+}
+
+impl GameEngine {
+    pub fn new(player_1_name: &str, player_2_name: &str) -> Self {
+        Self {
+            game_state: GameState::new(player_1_name, player_2_name),
+        }
+    }
+
     pub fn handle_select_piece(&mut self, input: &str) {
         if let Ok(piece) = input.parse::<Piece>() {
             println!("Selecting piece {}", piece);
-            let res = self.select_piece(piece);
+            let res = self.game_state.select_piece(piece);
             if let Err(e) = res {
                 println!("Got an error: {:?}", e);
-                println!("These pieces are available: {:?}", self.available_pieces());
+                println!(
+                    "These pieces are available: {:?}",
+                    self.game_state.available_pieces()
+                );
                 println!("Try selecting a piece again.");
             }
         }
@@ -137,7 +153,7 @@ impl GameState {
         }
         if let (Ok(row), Ok(col)) = (parts[0].parse::<usize>(), parts[1].parse::<usize>()) {
             println!("Placing piece {} at row {} and col {}", piece, row, col);
-            let res = self.place_piece(row, col);
+            let res = self.game_state.place_piece(row, col);
             if let Err(e) = res {
                 println!("Got an error: {:?}", e);
                 println!("Try placing the piece again.");

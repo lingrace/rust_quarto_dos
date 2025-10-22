@@ -1,6 +1,6 @@
 use pretty_assertions::{assert_eq, assert_matches};
 use rust_quarto_dos::board::{BoardError, Piece};
-use rust_quarto_dos::game_state::{GamePhase, GameState, GameStateError, Player};
+use rust_quarto_dos::game_state::{GameEngine, GamePhase, GameState, GameStateError, Player};
 
 // TODO: set up shared test setup
 // TODO turn into a proper test later
@@ -132,53 +132,56 @@ fn game_state_place_piece_success_is_won() {
 fn game_state_handle_select_piece_success() {
     let player_1_name = "player 1";
     let player_2_name = "god";
-    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let mut game_engine = GameEngine::new(player_1_name, player_2_name);
 
-    game_state.handle_select_piece("1");
+    game_engine.handle_select_piece("1");
     let _expected_available_pieces: Vec<Piece> =
         vec![0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
-    assert_matches!(game_state.game_phase, GamePhase::PlacePiece(1));
-    assert_matches!(game_state.available_pieces(), _expected_available_pieces);
+    assert_matches!(game_engine.game_state.game_phase, GamePhase::PlacePiece(1));
+    assert_matches!(
+        game_engine.game_state.available_pieces(),
+        _expected_available_pieces
+    );
 }
 
 #[test]
 fn game_state_handle_select_piece_failure() {
     let player_1_name = "player 1";
     let player_2_name = "god";
-    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let mut game_engine = GameEngine::new(player_1_name, player_2_name);
 
-    game_state.handle_select_piece("100");
-    assert_matches!(game_state.game_phase, GamePhase::SelectPiece);
+    game_engine.handle_select_piece("100");
+    assert_matches!(game_engine.game_state.game_phase, GamePhase::SelectPiece);
 }
 
 #[test]
 fn game_state_handle_place_piece_success() {
     let player_1_name = "player 1";
     let player_2_name = "god";
-    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let mut game_engine = GameEngine::new(player_1_name, player_2_name);
 
     // setup
-    game_state.handle_select_piece("1");
+    game_engine.handle_select_piece("1");
     let _expected_available_pieces: Vec<Piece> =
         vec![0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
     // test
-    game_state.handle_place_piece(1, "1, 1");
-    assert_matches!(game_state.game_phase, GamePhase::SelectPiece);
+    game_engine.handle_place_piece(1, "1, 1");
+    assert_matches!(game_engine.game_state.game_phase, GamePhase::SelectPiece);
 }
 
 #[test]
 fn game_state_handle_place_piece_failure() {
     let player_1_name = "player 1";
     let player_2_name = "god";
-    let mut game_state = GameState::new(player_1_name, player_2_name);
+    let mut game_engine = GameEngine::new(player_1_name, player_2_name);
 
     // setup
-    game_state.handle_select_piece("1");
+    game_engine.handle_select_piece("1");
     let _expected_available_pieces: Vec<Piece> =
         vec![0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
 
     // test
-    game_state.handle_place_piece(1, "1 1");
-    assert_matches!(game_state.game_phase, GamePhase::PlacePiece(1));
+    game_engine.handle_place_piece(1, "1 1");
+    assert_matches!(game_engine.game_state.game_phase, GamePhase::PlacePiece(1));
 }
