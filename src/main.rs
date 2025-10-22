@@ -3,7 +3,7 @@ use std::io;
 use rust_quarto_dos::board::{GamePhase, GameState};
 
 fn main() {
-    println!("loopy poop");
+    println!("constants on the move");
     let mut game_state = GameState::new("p1", "god");
 
     loop {

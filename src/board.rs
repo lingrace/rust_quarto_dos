@@ -1,8 +1,6 @@
 use std::{collections::HashSet, fmt::Display};
 
-const BOARD_SIZE: usize = 4;
-const EMPTY_CELL_VALUE: i8 = -1;
-const NUM_PIECES: usize = BOARD_SIZE * BOARD_SIZE;
+use crate::constants::{BOARD_SIZE, EMPTY_CELL_VALUE, NUM_PIECES};
 
 pub type Piece = i8;
 type BoardCells = [[Piece; BOARD_SIZE]; BOARD_SIZE];
