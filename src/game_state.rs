@@ -10,7 +10,7 @@ pub enum GamePhase {
     GameOver(Option<Player>),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Copy)]
 pub enum Player {
     Player1,
     Player2,
