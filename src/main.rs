@@ -5,60 +5,80 @@ use rust_quarto_dos::{
     game_state::{GameEngine, GamePhase},
 };
 
-fn main() {
+// TODO: replace all printlns in game_state or board into IO
+trait GameIO {
+    fn input(&self) -> String;
+    fn output(&self, str: String);
+}
+
+struct ConsoleGameIO {}
+impl GameIO for ConsoleGameIO {
+    fn input(&self) -> String {
+        let mut input = String::new();
+
+        io::stdin()
+            .read_line(&mut input)
+            .expect("Failed to read line");
+        input
+    }
+
+    fn output(&self, string: String) {
+        println!("{}", string);
+    }
+}
+
+// TODO: test game loop
+fn game_loop(io: Box<dyn GameIO>) {
     let mut game_engine = GameEngine::new();
 
-    println!("{}", INSTRUCTIONS);
+    io.output(format!("{}", INSTRUCTIONS));
 
     // TODO: will eventually go in game engine
     loop {
         // Output instructions
         match game_engine.game_state.game_phase {
             GamePhase::SetNameForPlayer(player) => {
-                println!("Enter a name for {}.", player);
+                io.output(format!("Enter a name for {}.", player));
             }
             GamePhase::SelectPiece => {
-                println!(
+                io.output(format!(
                     "{}, it's time to select a piece!",
                     game_engine.game_state.get_current_player()
-                );
-                println!(
+                ));
+                io.output(format!(
                     "available pieces: {:?}",
                     game_engine.game_state.available_pieces()
-                );
-                println!("Select a piece by id, e.g. 3, then enter.")
+                ));
+                io.output(format!("Select a piece by id, e.g. 3, then enter."))
             }
             GamePhase::PlacePiece(piece) => {
-                println!(
+                io.output(format!(
                     "{}, it's time to place piece {}!",
                     game_engine.game_state.get_current_player(),
                     piece
-                );
-                println!("Place piece by specifying row and colum, e.g. 1, 2, then enter.");
+                ));
+                io.output(format!(
+                    "Place piece by specifying row and colum, e.g. 1, 2, then enter."
+                ));
             }
             GamePhase::GameOver(option_player) => {
-                println!("game is over!");
+                io.output(format!("game is over!"));
                 match option_player {
                     Some(_) => {
-                        println!(
+                        io.output(format!(
                             "{} has won! Congratulations!",
                             game_engine.game_state.get_current_player()
-                        );
+                        ));
                     }
                     None => {
-                        println!("This game ended in a stalemate.");
+                        io.output(format!("This game ended in a stalemate."));
                     }
                 }
             }
         }
 
-        let mut input = String::new();
-
-        io::stdin()
-            .read_line(&mut input)
-            .expect("Failed to read line");
-
-        let input = input.trim(); // remove newline and spaces
+        let input = io.input(); // remove newline and spaces
+        let input = input.trim();
 
         // Handle input
         match input {
@@ -80,4 +100,9 @@ fn main() {
             },
         }
     }
+}
+
+fn main() {
+    println!("hai");
+    game_loop(Box::new(ConsoleGameIO {}));
 }
