@@ -1,13 +1,14 @@
+use std::fmt::Display;
+
 use crate::{
     board::{Board, BoardError, Piece},
     constants::NUM_PIECES,
 };
 
+// TODO: Merge SetNameForPlayer into 1
 #[derive(Debug, PartialEq)]
 pub enum GamePhase {
-    GameInit,
-    SetNameForPlayer1,
-    SetNameForPlayer2,
+    SetNameForPlayer(Player),
     SelectPiece,
     PlacePiece(Piece),
     GameOver(Option<Player>),
@@ -18,6 +19,19 @@ pub enum GamePhase {
 pub enum Player {
     Player1,
     Player2,
+}
+
+impl Display for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Player::Player1 => {
+                write!(f, "Player 1")
+            }
+            Player::Player2 => {
+                write!(f, "Player 2")
+            }
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -44,16 +58,28 @@ impl GameState {
             player_1: "Player 1".to_string(),
             player_2: "Player 2".to_string(),
             current_player: Player::Player1,
-            game_phase: GamePhase::GameInit,
+            game_phase: GamePhase::SetNameForPlayer(Player::Player1),
         }
     }
 
-    pub fn set_player_1_name(&mut self, player_1_name: &str) {
+    pub fn set_player_name(&mut self, player_name: &str, player: Player) {
         // TODO: add str validation
         // TODO: if str empty, no op
-        self.player_1 = player_1_name.to_string();
-        if self.game_phase == GamePhase::SetNameForPlayer1 {
-            self.game_phase = GamePhase::SetNameForPlayer2
+
+        match player {
+            Player::Player1 => {
+                self.player_1 = player_name.to_string();
+
+                if self.game_phase == GamePhase::SetNameForPlayer(Player::Player1) {
+                    self.game_phase = GamePhase::SetNameForPlayer(Player::Player2)
+                }
+            }
+            Player::Player2 => {
+                self.player_2 = player_name.to_string();
+                if self.game_phase == GamePhase::SetNameForPlayer(Player::Player2) {
+                    self.game_phase = GamePhase::SelectPiece
+                }
+            }
         }
     }
 
@@ -61,7 +87,7 @@ impl GameState {
         // TODO: add str validation
         // TODO: if str empty, no op
         self.player_2 = player_2_name.to_string();
-        if self.game_phase == GamePhase::SetNameForPlayer2 {
+        if self.game_phase == GamePhase::SetNameForPlayer(Player::Player2) {
             self.game_phase = GamePhase::SelectPiece
         }
     }
@@ -148,12 +174,8 @@ impl GameEngine {
         }
     }
 
-    pub fn set_player_1_name(&mut self, input: &str) {
-        self.game_state.set_player_1_name(input);
-    }
-
-    pub fn set_player_2_name(&mut self, input: &str) {
-        self.game_state.set_player_2_name(input);
+    pub fn set_player_name(&mut self, input: &str, player: Player) {
+        self.game_state.set_player_name(input, player);
     }
 
     pub fn handle_select_piece(&mut self, input: &str) {

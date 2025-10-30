@@ -3,7 +3,8 @@ use rust_quarto_dos::board::{BoardError, Piece};
 use rust_quarto_dos::game_state::{GameEngine, GamePhase, GameState, GameStateError, Player};
 
 // TODO: set up shared test setup
-// TODO turn into a proper test later
+// TODO: use loop advancer instead of manually setting up GamePhase for tests
+// TODO: turn into a proper test later
 #[test]
 fn new_game_state_values() {
     let game_state = GameState::new();
@@ -15,10 +16,10 @@ fn game_state_current_player() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
     assert_eq!(game_state.get_current_player(), player_1_name);
+
     assert!(game_state.select_piece(1).is_ok());
     assert_eq!(game_state.get_current_player(), player_2_name);
 }
@@ -28,9 +29,9 @@ fn game_state_select_piece_success() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let select_res = game_state.select_piece(1);
     assert!(select_res.is_ok());
     assert_matches!(game_state.game_phase, GamePhase::PlacePiece(1));
@@ -41,9 +42,9 @@ fn game_state_select_piece_failure_incorrect_game_phase() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let _ = game_state.select_piece(1);
     let select_res = game_state.select_piece(3);
     assert_matches!(select_res, Err(GameStateError::GamePhaseIncorrect));
@@ -54,9 +55,9 @@ fn game_state_select_piece_failure_invalid_piece() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let select_res = game_state.select_piece(111);
     assert_matches!(
         select_res,
@@ -70,9 +71,9 @@ fn game_state_select_piece_failure_piece_already_used() {
     let player_2_name = "god";
     let piece: i8 = 1;
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let select_res = game_state.select_piece(piece);
     assert!(select_res.is_ok());
     let place_res = game_state.place_piece(1, 1);
@@ -92,9 +93,9 @@ fn game_state_place_piece_success() {
     let player_2_name = "god";
     let piece: i8 = 1;
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let _ = game_state.select_piece(piece);
     let place_piece_res = game_state.place_piece(2, 0);
     assert!(place_piece_res.is_ok());
@@ -106,9 +107,9 @@ fn game_state_place_piece_failure_incorrect_game_phase() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let place_res = game_state.place_piece(1, 1);
     assert_matches!(place_res, Err(GameStateError::GamePhaseIncorrect));
 }
@@ -118,9 +119,9 @@ fn game_state_place_piece_failure_out_of_bounds() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
+
     let _ = game_state.select_piece(1);
     let place_res = game_state.place_piece(5, 2);
     assert_matches!(
@@ -134,9 +135,8 @@ fn game_state_place_piece_success_is_won() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_state = GameState::new();
-    game_state.game_phase = GamePhase::SetNameForPlayer1;
-    game_state.set_player_1_name(player_1_name);
-    game_state.set_player_2_name(player_2_name);
+    game_state.set_player_name(player_1_name, Player::Player1);
+    game_state.set_player_name(player_2_name, Player::Player2);
 
     // Set up win
     let _ = game_state.select_piece(0);
@@ -160,10 +160,13 @@ fn game_state_handle_select_piece_success() {
     let player_1_name = "player 1";
     let player_2_name = "god";
     let mut game_engine = GameEngine::new();
-    game_engine.set_player_1_name(player_1_name);
-    game_engine.set_player_2_name(player_2_name);
+    game_engine
+        .game_state
+        .set_player_name(player_1_name, Player::Player1);
+    game_engine
+        .game_state
+        .set_player_name(player_2_name, Player::Player2);
 
-    game_engine.game_state.game_phase = GamePhase::SelectPiece;
     game_engine.handle_select_piece("1");
     let _expected_available_pieces: Vec<Piece> =
         vec![0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
@@ -180,10 +183,13 @@ fn game_state_handle_select_piece_failure() {
     let player_2_name = "god";
 
     let mut game_engine = GameEngine::new();
-    game_engine.set_player_1_name(player_1_name);
-    game_engine.set_player_2_name(player_2_name);
+    game_engine
+        .game_state
+        .set_player_name(player_1_name, Player::Player1);
+    game_engine
+        .game_state
+        .set_player_name(player_2_name, Player::Player2);
 
-    game_engine.game_state.game_phase = GamePhase::SelectPiece;
     game_engine.handle_select_piece("100");
     assert_matches!(game_engine.game_state.game_phase, GamePhase::SelectPiece);
 }
@@ -194,11 +200,14 @@ fn game_state_handle_place_piece_success() {
     let player_2_name = "god";
 
     let mut game_engine = GameEngine::new();
-    game_engine.set_player_1_name(player_1_name);
-    game_engine.set_player_2_name(player_2_name);
+    game_engine
+        .game_state
+        .set_player_name(player_1_name, Player::Player1);
+    game_engine
+        .game_state
+        .set_player_name(player_2_name, Player::Player2);
 
     // setup
-    game_engine.game_state.game_phase = GamePhase::SelectPiece;
     game_engine.handle_select_piece("1");
     let _expected_available_pieces: Vec<Piece> =
         vec![0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];
@@ -214,11 +223,14 @@ fn game_state_handle_place_piece_failure() {
     let player_2_name = "god";
 
     let mut game_engine = GameEngine::new();
-    game_engine.set_player_1_name(player_1_name);
-    game_engine.set_player_2_name(player_2_name);
+    game_engine
+        .game_state
+        .set_player_name(player_1_name, Player::Player1);
+    game_engine
+        .game_state
+        .set_player_name(player_2_name, Player::Player2);
 
     // setup
-    game_engine.game_state.game_phase = GamePhase::SelectPiece;
     game_engine.handle_select_piece("1");
     let _expected_available_pieces: Vec<Piece> =
         vec![0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15];

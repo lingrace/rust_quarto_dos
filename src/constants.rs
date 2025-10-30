@@ -22,9 +22,4 @@ The order of play is as follows:
 4. Player 1 places that piece on the board
 
 The game continues until a player wins or the board is full.
-
-Pieces can be displayed in binary (e.g., 0000, 0001, 0010) or decimal (e.g., 0, 1, 2) format.
-You will be asked to choose your preferred format when setting up the game.
-
-To set up this game, enter the names of the players.\
 ";
