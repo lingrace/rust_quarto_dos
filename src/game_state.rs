@@ -3,14 +3,18 @@ use crate::{
     constants::NUM_PIECES,
 };
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum GamePhase {
+    GameInit,
+    SetNameForPlayer1,
+    SetNameForPlayer2,
     SelectPiece,
     PlacePiece(Piece),
     GameOver(Option<Player>),
 }
+// TODO you could just add more options for the rename phases
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Player {
     Player1,
     Player2,
@@ -34,13 +38,31 @@ pub struct GameState {
 
 impl GameState {
     // TODO: write a function that lets you create a GameState initialized with arbitraty state
-    pub fn new(player_1_name: &str, player_2_name: &str) -> Self {
+    pub fn new() -> Self {
         GameState {
             board: Board::default(),
-            player_1: player_1_name.to_string(),
-            player_2: player_2_name.to_string(),
+            player_1: "Player 1".to_string(),
+            player_2: "Player 2".to_string(),
             current_player: Player::Player1,
-            game_phase: GamePhase::SelectPiece,
+            game_phase: GamePhase::GameInit,
+        }
+    }
+
+    pub fn set_player_1_name(&mut self, player_1_name: &str) {
+        // TODO: add str validation
+        // TODO: if str empty, no op
+        self.player_1 = player_1_name.to_string();
+        if self.game_phase == GamePhase::SetNameForPlayer1 {
+            self.game_phase = GamePhase::SetNameForPlayer2
+        }
+    }
+
+    pub fn set_player_2_name(&mut self, player_2_name: &str) {
+        // TODO: add str validation
+        // TODO: if str empty, no op
+        self.player_2 = player_2_name.to_string();
+        if self.game_phase == GamePhase::SetNameForPlayer2 {
+            self.game_phase = GamePhase::SelectPiece
         }
     }
 
@@ -120,10 +142,18 @@ pub struct GameEngine {
 }
 
 impl GameEngine {
-    pub fn new(player_1_name: &str, player_2_name: &str) -> Self {
+    pub fn new() -> Self {
         Self {
-            game_state: GameState::new(player_1_name, player_2_name),
+            game_state: GameState::new(),
         }
+    }
+
+    pub fn set_player_1_name(&mut self, input: &str) {
+        self.game_state.set_player_1_name(input);
+    }
+
+    pub fn set_player_2_name(&mut self, input: &str) {
+        self.game_state.set_player_2_name(input);
     }
 
     pub fn handle_select_piece(&mut self, input: &str) {
