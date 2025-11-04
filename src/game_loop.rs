@@ -3,13 +3,13 @@ use std::io;
 use crate::{constants::INSTRUCTIONS, game_engine::GameEngine, game_state::GamePhase};
 
 pub trait GameIO {
-    fn input(&self) -> String;
-    fn output(&self, str: String);
+    fn input(&mut self) -> String;
+    fn output(&mut self, str: String);
 }
 
 pub struct ConsoleGameIO {}
 impl GameIO for ConsoleGameIO {
-    fn input(&self) -> String {
+    fn input(&mut self) -> String {
         let mut input = String::new();
 
         io::stdin()
@@ -18,13 +18,13 @@ impl GameIO for ConsoleGameIO {
         input
     }
 
-    fn output(&self, string: String) {
+    fn output(&mut self, string: String) {
         println!("{}", string);
     }
 }
 
 // TODO: test game loop
-pub fn game_loop(io: Box<dyn GameIO>) {
+pub fn game_loop(io: &mut dyn GameIO) {
     let mut game_engine = GameEngine::new();
 
     io.output(format!("{}", INSTRUCTIONS));
@@ -82,6 +82,7 @@ pub fn game_loop(io: Box<dyn GameIO>) {
             "display board" => {
                 game_engine.game_state.display_board();
             }
+            "quit" => break,
             "rename player {} {}" => {} // TODO: handle renaming commands
             _ => match game_engine.game_state.game_phase {
                 // TODO: improve input prompting
