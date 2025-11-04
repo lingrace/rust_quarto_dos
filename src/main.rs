@@ -1,9 +1,6 @@
 use std::io;
 
-use rust_quarto_dos::{
-    constants::INSTRUCTIONS,
-    game_state::{GameEngine, GamePhase},
-};
+use rust_quarto_dos::{constants::INSTRUCTIONS, game_engine::GameEngine, game_state::GamePhase};
 
 // TODO: replace all printlns in game_state or board into IO
 trait GameIO {
@@ -58,7 +55,7 @@ fn game_loop(io: Box<dyn GameIO>) {
                     piece
                 ));
                 io.output(format!(
-                    "Place piece by specifying row and colum, e.g. 1, 2, then enter."
+                    "Place piece by specifying row and column, e.g. 1, 2, then enter."
                 ));
             }
             GamePhase::GameOver(option_player) => {
@@ -103,6 +100,6 @@ fn game_loop(io: Box<dyn GameIO>) {
 }
 
 fn main() {
-    println!("hai");
+    println!("refactor GameEngine into own file");
     game_loop(Box::new(ConsoleGameIO {}));
 }
